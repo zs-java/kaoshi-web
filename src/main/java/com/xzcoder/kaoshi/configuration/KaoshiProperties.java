@@ -19,6 +19,11 @@ public class KaoshiProperties implements Serializable {
     private static KaoshiProperties INSTANCE;
 
     /**
+     * 版本
+     */
+    private String version;
+
+    /**
      * 图片路径
      */
     private String picPath;
@@ -35,6 +40,14 @@ public class KaoshiProperties implements Serializable {
 
     public static KaoshiProperties getInstance() {
         return Objects.requireNonNull(INSTANCE);
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getPicPath() {

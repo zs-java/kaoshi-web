@@ -84,7 +84,6 @@
     <root level="info">
         <appender-ref ref="file_info" />
         <appender-ref ref="file_error" />
-        <appender-ref ref="exec_job" />
     </root>
 
 	<!--系统用户操作日志-->
