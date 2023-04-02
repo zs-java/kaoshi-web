@@ -64,5 +64,5 @@ logs
 D:
 attach
 
-### Static
-./temp/
+### Temp
+temp/
