@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StLevelMapper">
+
+	<!-- sql：sql片段 -->
+
+	<!-- exam_st_level表的所有列 -->
+	<sql id="select_stl_col">
+		exam_st_level.level_id stl_id, exam_st_level.name stl_name,
+		exam_st_level.pid stl_pid, exam_st_level.sort stl_sort
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamStLevelCustom" id="StLevelResultMap">
+		<id column="stl_id" property="levelId"/>
+		<result column="stl_name" property="name"/>
+		<result column="stl_pid" property="pid"/>
+		<result column="stl_sort" property="sort"/>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="getAllStLevel" resultMap="StLevelResultMap">
+		SELECT
+		<include refid="select_stl_col" />
+		FROM exam_st_level
+	</select>
+
+	<update id="updateStLevelNameById" parameterType="com.xzcoder.kaoshi.po.ExamStLevelCustom">
+		UPDATE exam_st_level
+		SET NAME = #{name}
+		<where>
+			level_id = #{levelId}
+		</where>
+	</update>
+
+	<insert id="insertStLevel" parameterType="com.xzcoder.kaoshi.po.ExamStLevelCustom">
+		<selectKey keyProperty="levelId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO exam_st_level (
+					NAME,
+					pid
+					<if test="sort != null">
+						, sort
+					</if>
+					) VALUE(
+						#{name},
+						#{pid}
+					<if test="sort != null">
+						, #{sort}
+					</if>
+					)
+	</insert>
+
+	<delete id="deleteStLevelById" parameterType="Integer">
+		DELETE FROM exam_st_level
+		<where>
+			level_id = #{value}
+		</where>
+	</delete>
+
+	<delete id="deleteStLevelByIdArray">
+		DELETE FROM exam_st_level
+		<where>
+			<foreach collection="array" item="id" open="AND level_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<select id="getChildIdByPid" parameterType="Integer" resultType="Integer">
+		SELECT level_id FROM exam_st_level
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getStLevelByPid" parameterType="Integer" resultMap="StLevelResultMap">
+		SELECT
+		<include refid="select_stl_col" />
+		FROM exam_st_level
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+	<select id="getAllStLevelIds" resultType="Integer">
+		SELECT level_id FROM exam_st_level
+	</select>
+</mapper>

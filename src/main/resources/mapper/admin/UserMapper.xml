@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.UserMapper">
+
+	<!--
+	sql片段
+	 -->
+	<sql id="select_user_col">
+		sys_user.id user_id, sys_user.username user_username, sys_user.PASSWORD user_password, sys_user.role_id user_role_id,
+		sys_user.group_id user_group_id, sys_user.readly_name user_readly_name, sys_user.gender user_gender, sys_user.email user_email,
+		sys_user.icon user_icon, sys_user.birthday user_birthday, sys_user.UUID user_uuid, sys_user.login_count user_login_count,
+		sys_user.last_login_date user_last_login_date, sys_user.reg_date user_reg_date
+	</sql>
+	<sql id="where_username_password">
+		AND username = #{username}
+		AND PASSWORD= #{password}
+	</sql>
+	<sql id="where_query_users">
+		<if test="userCustom != null">
+			<if test="userCustom.username != null and userCustom.username != ''">
+				and sys_user.username like '%${userCustom.username}%'
+			</if>
+			<if test="userCustom.readlyName != null and userCustom.readlyName != ''">
+				and sys_user.readly_name like '%${userCustom.readlyName}%'
+			</if>
+		</if>
+		<if test="userGender != null">
+			<if test="userGender == 1 or userGender == 0">
+				and sys_user.gender = #{userGender}
+			</if>
+		</if>
+		<!-- <if test="groupCustom != null ">
+			<if test="groupCustom.groupId != null">
+				and sys_group.group_id = #{groupCustom.groupId}
+			</if>
+		</if> -->
+		<if test="groupIds != null">
+			<foreach collection="groupIds" item="groupId" open="AND sys_group.group_id IN (" close=")" separator=",">
+					#{groupId}
+			</foreach>
+		</if>
+		<if test="roleCustom != null">
+			<if test="roleCustom.roleId != null and roleCustom.roleId >= 0">
+				and sys_role.role_id = #{roleCustom.roleId}
+			</if>
+		</if>
+		<if test="withOutIds != null">
+			<foreach collection="withOutIds" item="id" open="AND sys_user.id NOT IN(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+		<if test="withIds != null">
+			<foreach collection="withIds" item="id" open="AND sys_user.id IN(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+	</sql>
+	<sql id="limit_page">
+		limit #{pageBean.startIndex}, #{pageBean.pageSize};
+		<!-- LIMIT 0, 15; -->
+	</sql>
+	<sql id="where_in_userId">
+		<foreach collection="array" item="id" open="AND sys_user.id IN (" close=")" separator=",">
+			#{id}
+		</foreach>
+	</sql>
+
+	<!--
+	ResultMap
+	-->
+	<!-- 封装user对象 -->
+	<resultMap type="com.xzcoder.kaoshi.po.SysUserCustom" id="UserResultMap">
+		<id column="id" property="id"/>
+		<result column="username" property="username"/>
+		<result column="password" property="password"/>
+		<result column="role_id" property="roleId"/>
+		<result column="group_id" property="groupId"/>
+		<result column="readly_name" property="readlyName"/>
+		<result column="gender" property="gender"/>
+		<result column="email" property="email"/>
+		<result column="icon" property="icon"/>
+		<result column="birthday" property="birthday"/>
+		<result column="uuid" property="uuid"/>
+		<result column="login_count" property="loginCount"/>
+		<result column="last_login_date" property="lastLoginDate"/>
+		<result column="reg_date" property="regDate"/>
+	</resultMap>
+	<!-- 封装userCustom对象 -->
+	<resultMap type="com.xzcoder.kaoshi.po.SysUserCustom" id="UserCustomResultMap" extends="UserResultMap">
+		<association property="roleCustom" javaType="com.xzcoder.kaoshi.po.SysRoleCustom">
+			<id column="r_roleId" property="roleId"/>
+			<result column="r_roleName" property="roleName"/>
+			<result column="r_des" property="des"/>
+			<result column="r_sort" property="sort"/>
+		</association>
+		<association property="groupCustom" javaType="com.xzcoder.kaoshi.po.SysGroupCustom">
+			<id column="g_groupId" property="groupId"/>
+			<result column="g_groupPid" property="groupPid"/>
+			<result column="g_groupName" property="groupName"/>
+			<result column="g_sort" property="sort"/>
+		</association>
+	</resultMap>
+
+	<!--
+	statement
+	 -->
+	<!-- 根据用户名密码查询用户对象 -->
+	<select id="findUserListByUsernameAndPassword" parameterType="com.xzcoder.kaoshi.po.SysUser" resultMap="UserResultMap">
+		SELECT * FROM sys_user
+		<where>
+			<include refid="where_username_password"></include>
+		</where>
+	</select>
+
+	<!-- 将用户登录次数加1 -->
+	<update id="updateLoginCountByUserId" parameterType="Integer">
+		UPDATE sys_user
+			SET sys_user.login_count = sys_user.login_count + 1
+			<where>
+				sys_user.id = #{userId}
+			</where>
+	</update>
+
+	<select id="getAllUsers" resultMap="UserCustomResultMap">
+		SELECT
+			sys_user.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" /> ,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.RoleMapper.select_role_col"></include>
+		FROM sys_user
+		LEFT JOIN sys_group ON sys_group.group_id = user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = user.role_id
+	</select>
+
+	<select id="findUsersByUserQueryVo"
+		parameterType="com.xzcoder.kaoshi.vo.UserQueryVo"
+		resultMap="UserCustomResultMap">
+		SELECT
+			sys_user.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" /> ,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.RoleMapper.select_role_col"></include>
+		FROM sys_user
+		LEFT JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			<include refid="where_query_users"></include>
+		</where>
+		<include refid="limit_page"></include>
+	</select>
+
+	<select id="getUsersCountByUserQueryVo" parameterType="com.xzcoder.kaoshi.vo.UserQueryVo" resultType="Integer">
+		SELECT
+			COUNT(*)
+		FROM sys_user
+		LEFT JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			<include refid="where_query_users"></include>
+		</where>
+	</select>
+
+	<insert id="insertUser" parameterType="com.xzcoder.kaoshi.po.SysUserCustom">
+		INSERT INTO sys_user(
+			username, PASSWORD, role_id, group_id, gender, UUID, reg_date
+			<if test="readlyName != null and readlyName != ''">
+				, readly_name
+			</if>
+			<if test="email != null and email != ''">
+				, email
+			</if>
+			<if test="birthday != null">
+				, birthday
+			</if>
+			)
+		value(
+			#{username},
+			#{password},
+			#{roleId},
+			#{groupId},
+			#{intGender},
+			#{uuid},
+			#{regDateString}
+			<if test="readlyName != null and readlyName != ''">
+				, #{readlyName}
+			</if>
+			<if test="email != null and email != ''">
+				, #{email}
+			</if>
+			<if test="birthday != null">
+				, #{birthdayString}
+			</if>
+		)
+	</insert>
+
+	<delete id="deleteUserList">
+		DELETE FROM sys_user
+		<where>
+			<include refid="where_in_userId"></include>
+		</where>
+	</delete>
+
+	<delete id="deleteUserById" parameterType="Integer">
+		DELETE FROM sys_user
+		<where>
+			sys_user.id = #{id}
+		</where>
+	</delete>
+
+	<select id="getUserById" parameterType="Integer" resultMap="UserCustomResultMap">
+		SELECT
+			sys_user.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" /> ,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.RoleMapper.select_role_col"></include>
+		FROM sys_user
+		LEFT JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			sys_user.id = #{id}
+		</where>
+	</select>
+
+	<select id="getUserCountByUsername" parameterType="String" resultType="Integer">
+		SELECT
+			COUNT(*)
+		FROM sys_user
+		<where>
+			sys_user.username = #{username}
+		</where>
+	</select>
+
+	<select id="updateUserById" resultType="com.xzcoder.kaoshi.po.SysUserCustom">
+		UPDATE sys_user
+		SET username = #{username},
+		    <if test="password!=null">
+		    	PASSWORD = #{password},
+		    </if>
+		    group_id = #{groupId},
+		    readly_name = #{readlyName},
+		    gender = #{intGender},
+		    email = #{email},
+		    icon = #{icon}
+		    <if test="birthday!=null">
+		    , birthday = #{birthday}
+		    </if>
+		WHERE  id = #{id}
+	</select>
+
+	<delete id="deleteUserByGroupId" parameterType="Integer">
+		DELETE FROM sys_user
+		<where>
+			group_id = #{groupId}
+		</where>
+	</delete>
+
+	<delete id="deleteUserByGroupIdArray" parameterType="Integer[]">
+		DELETE FROM sys_user
+		<where>
+			<foreach collection="array" item="groupId" open=" AND sys_user.groupId IN (" close=")" separator=",">
+				#{groupId}
+			</foreach>
+		</where>
+	</delete>
+
+	<update id="updateUserGroupIdByGroupIdArray">
+		UPDATE sys_user SET group_id = #{setGroupId}
+		<where>
+			<foreach collection="groupIds" item="groupId" open=" AND sys_user.group_id IN (" close=")" separator=",">
+				#{groupId}
+			</foreach>
+		</where>
+	</update>
+
+	<update id="updateUserGroupIdByGroupId">
+		UPDATE sys_user SET group_id = #{setGroupId}
+		<where>
+			group_id = #{groupId}
+		</where>
+	</update>
+
+	<select id="findUserListByIds" resultMap="UserCustomResultMap">
+		SELECT
+			sys_user.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" /> ,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.RoleMapper.select_role_col"></include>
+		FROM sys_user
+		LEFT JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			<foreach collection="ids" item="id" open="AND sys_user.id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+			<if test="groupIds != null">
+				<foreach collection="groupIds" item="groupId" open="OR sys_user.group_id IN (" close=")" separator=",">
+					#{groupId}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="findUserNotInExamByVo" parameterType="com.xzcoder.kaoshi.vo.UserQueryVo" resultMap="UserCustomResultMap">
+		SELECT sys_user.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" /> ,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.RoleMapper.select_role_col"></include>
+		FROM sys_user
+		INNER JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			<include refid="where_notin_exam" />
+		</where>
+		<include refid="limit_page" />
+	</select>
+
+	<select id="getUserNotInExamByVo" parameterType="com.xzcoder.kaoshi.vo.UserQueryVo" resultType="Integer">
+		SELECT COUNT(1)
+		FROM sys_user
+		INNER JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			<include refid="where_notin_exam" />
+		</where>
+	</select>
+
+	<sql id="where_notin_exam">
+		AND sys_user.id NOT IN (
+			SELECT exam_ks_user.user_id
+			FROM exam_ks_user
+			WHERE exam_ks_user.ks_id = #{ksId}
+		)
+		AND sys_user.role_id = 2
+		AND sys_user.username LIKE '%${username}%'
+		<foreach collection="groupIds" item="g_id" open="AND sys_user.group_id IN (" close=")" separator=",">
+			#{g_id}
+		</foreach>
+	</sql>
+</mapper>

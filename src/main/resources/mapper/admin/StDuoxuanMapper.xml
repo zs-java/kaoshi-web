@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StDuoxuanMapper">
+
+	<!--
+		sql片段
+	 -->
+
+	<!--
+		ResultMap：输出映射
+	-->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamStDuoxuanCustom" id="StDuoxuanResultMap">
+		<id column="question_id" property="questionId"/>
+		<result column="title" property="title"/>
+		<result column="options" property="options"/>
+		<result column="right_key" property="rightKey"/>
+		<result column="detail" property="detail"/>
+		<result column="score" property="score"/>
+	</resultMap>
+
+
+	<!--
+		statement
+	 -->
+	<insert id="insertStDuoxuan" parameterType="com.xzcoder.kaoshi.po.ExamStDuoxuanCustom">
+		INSERT INTO exam_st_duoxuan(question_id, title, OPTIONS, right_key, detail)
+		VALUE(#{questionId}, #{title}, #{options}, #{rightKey}, #{detail})
+	</insert>
+
+	<select id="getStDuoxuanById" parameterType="Integer" resultMap="StDuoxuanResultMap">
+		SELECT *
+		FROM exam_st_duoxuan
+		<where>
+			question_id = #{value}
+		</where>
+	</select>
+
+	<update id="updateStDuoxuan" parameterType="com.xzcoder.kaoshi.po.ExamStDuoxuanCustom">
+		UPDATE exam_st_duoxuan
+		SET title = #{title},
+		OPTIONS = #{options},
+		right_key = #{rightKey},
+		detail = #{detail}
+		<where>
+			question_id = #{questionId}
+		</where>
+	</update>
+
+	<delete id="deleteStDuoxuan" parameterType="Integer">
+		DELETE FROM exam_st_duoxuan WHERE question_id = #{value}
+	</delete>
+
+</mapper>

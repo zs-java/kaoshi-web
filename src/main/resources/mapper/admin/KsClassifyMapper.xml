@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.KsClassifyMapper">
+
+	<!-- sql：sql片段 -->
+
+	<!-- exam_ks_classify表的所有列 -->
+	<sql id="select_ksc_col">
+		exam_ks_classify.classify_id ksc_id, exam_ks_classify.name ksc_name,
+		exam_ks_classify.pid ksc_pid, exam_ks_classify.sort ksc_sort
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamKsClassifyCustom" id="KsClassifyResultMap">
+		<id column="ksc_id" property="classifyId"/>
+		<result column="ksc_name" property="name"/>
+		<result column="ksc_pid" property="pid"/>
+		<result column="ksc_sort" property="sort"/>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="getAllKsClassify" resultMap="KsClassifyResultMap">
+		SELECT
+		<include refid="select_ksc_col" />
+		FROM exam_ks_classify
+	</select>
+
+	<update id="updateKsClassifyNameById" parameterType="com.xzcoder.kaoshi.po.ExamKsClassifyCustom">
+		UPDATE exam_ks_classify
+		SET NAME = #{name}
+		<where>
+			classify_id = #{classifyId}
+		</where>
+	</update>
+
+	<insert id="insertKsClassify" parameterType="com.xzcoder.kaoshi.po.ExamKsClassifyCustom">
+		<selectKey keyProperty="classifyId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		INSERT INTO exam_ks_classify (
+					NAME,
+					pid
+					<if test="sort != null">
+						, sort
+					</if>
+					) VALUE(
+						#{name},
+						#{pid}
+					<if test="sort != null">
+						, #{sort}
+					</if>
+					)
+	</insert>
+
+	<delete id="deleteKsClassifyById" parameterType="Integer">
+		DELETE FROM exam_ks_classify
+		<where>
+			classify_id = #{value}
+		</where>
+	</delete>
+
+	<delete id="deleteKsClassifyByIdArray">
+		DELETE FROM exam_ks_classify
+		<where>
+			<foreach collection="array" item="id" open="AND classify_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<select id="getChildIdByPid" parameterType="Integer" resultType="Integer">
+		SELECT classify_id FROM exam_ks_classify
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getKsClassifyByPid" parameterType="Integer" resultMap="KsClassifyResultMap">
+		SELECT
+		<include refid="select_ksc_col" />
+		FROM exam_ks_classify
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+</mapper>

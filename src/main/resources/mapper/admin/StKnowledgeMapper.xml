@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StKnowledgeMapper">
+
+	<!--
+		sql：sql片段
+	 -->
+	<!-- exam_st_knowledge表的所有列 -->
+	<sql id="select_stk_col">
+		exam_st_knowledge.classify_id stk_id, exam_st_knowledge.name stk_name,
+		exam_st_knowledge.pid stk_pid, exam_st_knowledge.sort stk_sort
+	</sql>
+
+	<!--
+		resultMap：输出映射
+	 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamStKnowledgeCustom" id="StKnowledgeResultMap">
+		<id column="stk_id" property="classifyId"/>
+		<result column="stk_name" property="name"/>
+		<result column="stk_pid" property="pid"/>
+		<result column="stk_sort" property="sort"/>
+	</resultMap>
+
+	<!--
+		statement
+	 -->
+	<select id="getAllStKnowledge" resultMap="StKnowledgeResultMap">
+		SELECT
+		<include refid="select_stk_col" />
+		FROM exam_st_knowledge
+	</select>
+
+	<update id="updateStKnowledgeNameById" parameterType="com.xzcoder.kaoshi.po.ExamStKnowledgeCustom">
+		UPDATE exam_st_knowledge
+		SET NAME = #{name}
+		<where>
+			classify_id = #{classifyId}
+		</where>
+	</update>
+
+	<insert id="insertStKnowledge" parameterType="com.xzcoder.kaoshi.po.ExamStKnowledgeCustom">
+		<selectKey keyProperty="classifyId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO exam_st_knowledge (
+					NAME,
+					pid
+					<if test="sort != null">
+						, sort
+					</if>
+					) VALUE(
+						#{name},
+						#{pid}
+					<if test="sort != null">
+						, #{sort}
+					</if>
+					)
+	</insert>
+
+	<delete id="deleteStKnowledgeById" parameterType="Integer">
+		DELETE FROM exam_st_knowledge
+		<where>
+			classify_id = #{value}
+		</where>
+	</delete>
+
+	<delete id="deleteStKnowledgeByIdArray">
+		DELETE FROM exam_st_knowledge
+		<where>
+			<foreach collection="array" item="id" open="AND classify_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<select id="getChildIdByPid" parameterType="Integer" resultType="Integer">
+		SELECT classify_id FROM exam_st_knowledge
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getStKnowledgesByPid" parameterType="Integer" resultMap="StKnowledgeResultMap">
+		SELECT
+		<include refid="select_stk_col" />
+		FROM exam_st_knowledge
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getAllStKnowledgeIds" resultType="Integer">
+		SELECT classify_id FROM exam_st_knowledge
+	</select>
+
+</mapper>

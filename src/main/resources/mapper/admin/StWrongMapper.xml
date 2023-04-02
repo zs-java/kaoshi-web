@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StWrongMapper">
+
+	<resultMap type="com.xzcoder.kaoshi.po.Wrong" id="wrongResultMap">
+		<id column="ins_date" property="insDate" />
+		<result column="user_id" property="userId" />
+	</resultMap>
+
+	<select id="findWrongDateByUserId" resultMap="wrongResultMap" parameterType="com.xzcoder.kaoshi.po.StWrong">
+		SELECT ins_date, user_id
+		FROM exam_st_wrong
+		WHERE user_id = #{userId}
+		GROUP BY ins_date
+		ORDER BY ins_date DESC
+		LIMIT #{startIndex}, #{ps}
+	</select>
+
+	<select id="getWrongDateCountByUserId" parameterType="com.xzcoder.kaoshi.po.StWrong" resultType="Integer">
+		SELECT COUNT(1) FROM (SELECT DISTINCT t.ins_date FROM (SELECT ins_date FROM exam_st_wrong WHERE user_id = #{userId}) t) tt
+	</select>
+
+	<select id="findStIdsByUserIdAndDate" parameterType="com.xzcoder.kaoshi.po.Wrong" resultType="Integer">
+		SELECT st_id
+		FROM exam_st_wrong
+		WHERE user_id = #{userId} AND ins_date = #{insDate}
+	</select>
+
+	<delete id="deleteWrongByUserIdQsnId">
+		DELETE FROM exam_st_wrong WHERE user_id = #{userId} AND st_id = #{qsnId}
+	</delete>
+
+	<insert id="insertWrongByUserIdQsnId">
+		INSERT INTO exam_st_wrong VALUE(NULL, #{userId}, #{qsnId}, NOW());
+	</insert>
+
+	<select id="getUserWrongsCount" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(1) FROM exam_st_wrong WHERE user_id = #{value};
+	</select>
+
+	<delete id="deleteWrongByUserId">
+		DELETE FROM exam_st_wrong WHERE user_id = #{value}
+	</delete>
+
+	<delete id="deleteWrongByQsnId">
+		DELETE FROM exam_st_wrong WHERE st_id = #{value}
+	</delete>
+
+	<delete id="deleteWrongByUserIdQsnIdNowDate">
+		DELETE FROM exam_st_wrong WHERE user_id = #{userId} AND st_id = #{qsnId} AND ins_date = CURRENT_DATE()
+	</delete>
+
+	<delete id="deleteWrongBeforeDate" parameterType="java.util.Date">
+	<![CDATA[
+		DELETE FROM exam_st_wrong WHERE ins_date < #{value}
+	]]>
+	</delete>
+
+</mapper>

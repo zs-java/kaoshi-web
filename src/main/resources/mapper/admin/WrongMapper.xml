@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.WrongMapper">
+
+	<!-- sql：sql片段 -->
+	<sql id="select_wrong_col">
+		exam_wrong.id wr_id, exam_wrong.user_id wr_user_id, exam_wrong.st_ids wr_st_ids
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamWrongCustom" id="wrongResultMap">
+		<id column="wr_id" property="id"/>
+		<result column="wr_user_id" property="userId"/>
+		<result column="wr_st_ids" property="stIds"/>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="getWrongListByUserId" parameterType="Integer" resultMap="wrongResultMap">
+		SELECT
+			<include refid="select_wrong_col" />
+		FROM exam_wrong
+		<where>
+			exam_wrong.user_id = #{value}
+		</where>
+	</select>
+
+	<update id="updateStIdsByUserId" parameterType="com.xzcoder.kaoshi.po.ExamWrongCustom">
+		UPDATE exam_wrong
+			SET st_ids = #{stIds}
+		<where>
+		user_id = #{userId}
+		</where>
+	</update>
+
+	<insert id="insertWrong" parameterType="com.xzcoder.kaoshi.po.ExamWrongCustom">
+		<selectKey keyProperty="id" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		INSERT exam_wrong(user_id, st_ids) VALUE(#{userId}, #{stIds})
+	</insert>
+
+	<delete id="deleteWrongByUserId" parameterType="Integer">
+		DELETE FROM exam_wrong
+		<where>
+			user_id = #{value}
+		</where>
+	</delete>
+
+</mapper>

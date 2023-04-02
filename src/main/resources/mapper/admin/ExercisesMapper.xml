@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.ExercisesMapper">
+
+	<!-- sql：sql片段 -->
+	<sql id="select_exer_col">
+		exercises.id exer_id, exercises.user_id exer_user_id, exercises.day_date exer_day_date, exercises.st_ids exer_st_ids,
+		exercises.st_classifys exer_st_classifys, exercises.st_levels exer_st_levels, exercises.st_knowledges exer_st_knowledges,
+		exercises.total_count exer_total_count, exercises.right_count exer_right_count, exercises.ins_date exer_ins_date,
+		exercises.upd_date exer_upd_date, exercises.UUID exer_uuid
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExercisesCustom" id="exercisesResultMap">
+		<id column="exer_id" property="id"/>
+		<result column="exer_user_id" property="userId"/>
+		<result column="exer_day_date" property="dayDate"/>
+		<result column="exer_st_ids" property="stIds"/>
+		<result column="exer_st_classifys" property="stClassifys"/>
+		<result column="exer_st_levels" property="stLevels"/>
+		<result column="exer_st_knowledges" property="stKnowledges"/>
+		<result column="exer_total_count" property="totalCount"/>
+		<result column="exer_right_count" property="rightCount"/>
+		<result column="exer_ins_date" property="insDate"/>
+		<result column="exer_upd_date" property="updDate"/>
+		<result column="exer_uuid" property="uuid"/>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.ExercisesCustom" id="exercisesCustomResultMap" extends="exercisesResultMap">
+		<association property="user" javaType="com.xzcoder.kaoshi.po.SysUserCustom">
+			<id column="id" property="id"/>
+			<result column="username" property="username"/>
+			<result column="password" property="password"/>
+			<result column="role_id" property="roleId"/>
+			<result column="group_id" property="groupId"/>
+			<result column="readly_name" property="readlyName"/>
+			<result column="gender" property="gender"/>
+			<result column="email" property="email"/>
+			<result column="icon" property="icon"/>
+			<result column="birthday" property="birthday"/>
+			<result column="uuid" property="uuid"/>
+			<result column="login_count" property="loginCount"/>
+			<result column="last_login_date" property="lastLoginDate"/>
+			<result column="reg_date" property="regDate"/>
+		</association>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.UserExerData" id="userExerDataResultMap">
+		<id column="uuid" property="uuid"/>
+		<result column="exer_day_date" property="dayDate"/>
+		<result column="exer_total_count" property="totalCount"/>
+		<result column="exer_right_count" property="rightCount"/>
+		<result column="exer_time" property="time"/>
+		<association property="user" javaType="com.xzcoder.kaoshi.po.SysUserCustom">
+			<id column="id" property="id"/>
+			<result column="username" property="username"/>
+			<result column="password" property="password"/>
+			<result column="role_id" property="roleId"/>
+			<result column="group_id" property="groupId"/>
+			<result column="readly_name" property="readlyName"/>
+			<result column="gender" property="gender"/>
+			<result column="email" property="email"/>
+			<result column="icon" property="icon"/>
+			<result column="birthday" property="birthday"/>
+			<result column="uuid" property="uuid"/>
+			<result column="login_count" property="loginCount"/>
+			<result column="last_login_date" property="lastLoginDate"/>
+			<result column="reg_date" property="regDate"/>
+			<association property="groupCustom" javaType="com.xzcoder.kaoshi.po.SysGroupCustom">
+				<id column="g_groupId" property="groupId"/>
+				<result column="g_groupPid" property="groupPid"/>
+				<result column="g_groupName" property="groupName"/>
+				<result column="g_sort" property="sort"/>
+			</association>
+		</association>
+	</resultMap>
+
+	<!-- statement -->
+	<insert id="insertExercises" parameterType="com.xzcoder.kaoshi.po.ExercisesCustom">
+		<selectKey keyProperty="id" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		INSERT INTO exercises(user_id, day_date, st_classifys, st_knowledges, st_levels, total_count, right_count, ins_date, upd_date, UUID)
+		VALUE(#{userId}, #{dayDate}, #{stClassifys}, #{stKnowledges},#{stLevels}, 0, 0, NOW(), NOW(), #{uuid})
+	</insert>
+
+	<select id="getExercisesById" parameterType="Integer" resultMap="exercisesResultMap">
+		SELECT <include refid="select_exer_col" />
+		FROM exercises
+		<where>
+			id = #{value}
+		</where>
+	</select>
+
+	<update id="updateExercises" parameterType="com.xzcoder.kaoshi.po.ExercisesCustom">
+		UPDATE exercises
+			SET st_ids = #{stIds},
+			total_count = #{totalCount},
+			right_count = #{rightCount},
+			upd_date = NOW()
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<select id="getExersByUserId" parameterType="Integer" resultMap="exercisesResultMap">
+		SELECT <include refid="select_exer_col" />
+		FROM exercises
+		<where>
+			user_id = #{value}
+		</where>
+		ORDER BY ins_date DESC
+	</select>
+
+	<select id="getExersCountByUserId" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(1)
+		FROM exercises
+		<where>
+			user_id = #{value}
+		</where>
+	</select>
+
+	<select id="findExersByUserIdPage" parameterType="map" resultMap="exercisesResultMap">
+		SELECT <include refid="select_exer_col" />
+		FROM exercises
+		<where>
+			user_id = #{userId}
+		</where>
+		ORDER BY ins_date DESC
+		LIMIT #{pb.startIndex}, #{pb.pageSize}
+	</select>
+
+	<select id="findUserExerDatasByVo" parameterType="com.xzcoder.kaoshi.vo.ExercisesQueryVo" resultMap="userExerDataResultMap">
+		SELECT UUID() uuid, sys_user.*, <include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" />,
+		exercises.day_date exer_day_date, SUM(exercises.total_count) exer_total_count, SUM(exercises.right_count) exer_right_count, SUM(TIMESTAMPDIFF(MINUTE, exercises.ins_date, exercises.upd_date)) exer_time
+		FROM exercises
+		INNER JOIN sys_user ON sys_user.id = exercises.user_id
+		INNER JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		<where>
+			<if test="username != null and username != ''">
+				AND sys_user.username LIKE '%${username}%'
+			</if>
+			<foreach collection="groupIds" item="id" open="AND sys_user.group_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+			AND sys_user.role_id = 2
+			<if test="date != null and date != ''">
+				AND exercises.day_date = #{date}
+			</if>
+		</where>
+		GROUP BY day_date, sys_user.id
+		ORDER BY day_date DESC
+		LIMIT #{pageBean.startIndex}, #{pageBean.pageSize}
+	</select>
+
+	<select id="getUserExerDatasCountByVo" parameterType="com.xzcoder.kaoshi.vo.ExercisesQueryVo" resultType="Integer">
+		SELECT COUNT(1) FROM (
+		SELECT sys_user.id
+		FROM exercises
+		INNER JOIN sys_user ON sys_user.id = exercises.user_id
+		<where>
+			<if test="username != null and username != ''">
+				AND sys_user.username LIKE '%${username}%'
+			</if>
+			<foreach collection="groupIds" item="id" open="AND sys_user.group_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+			AND sys_user.role_id = 2
+			<if test="date != null and date != ''">
+				AND exercises.day_date = #{date}
+			</if>
+		</where>
+		GROUP BY day_date, sys_user.id
+		) t
+	</select>
+
+	<select id="findExercisesListByVo" parameterType="com.xzcoder.kaoshi.vo.ExercisesQueryVo" resultMap="exercisesResultMap">
+		SELECT <include refid="select_exer_col" />
+		FROM exercises
+		<where>
+			AND exercises.user_id = #{userId}
+			<if test="dayDateString != null and dayDateString != ''">
+			AND exercises.day_date = #{dayDateString}
+			</if>
+		</where>
+		ORDER BY ins_date DESC
+		LIMIT #{pageBean.startIndex}, #{pageBean.pageSize}
+	</select>
+
+	<select id="getExercisesCountByVo" parameterType="com.xzcoder.kaoshi.vo.ExercisesQueryVo" resultType="Integer">
+		SELECT COUNT(1)
+		FROM exercises
+		<where>
+			AND exercises.user_id = #{userId}
+			AND exercises.day_date = #{dayDateString}
+		</where>
+	</select>
+
+	<select id="getExerTotalCountByUserId" parameterType="Integer" resultType="Integer">
+		SELECT SUM(total_count)
+		FROM exercises
+		<where>
+			user_id = #{value}
+		</where>
+
+	</select>
+
+	<delete id="deleteExersByUserId" parameterType="Integer">
+		DELETE FROM exercises WHERE user_id = #{value}
+	</delete>
+
+	<select id="findNotExerUsers" parameterType="com.xzcoder.kaoshi.vo.ExercisesQueryVo" resultMap="userExerDataResultMap">
+		SELECT UUID() uuid, sys_user.*, <include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" />,
+		#{date} exer_day_date, 0 exer_total_count, 0 exer_right_count, 0 exer_time
+		FROM sys_user
+		INNER JOIN sys_group ON sys_user.group_id = sys_group.group_id
+		WHERE id NOT IN(SELECT user_id FROM exercises WHERE day_date = #{date})
+		<if test="username != null and username != ''">
+			AND sys_user.username LIKE '%${username}%'
+		</if>
+		<foreach collection="groupIds" item="id" open="AND sys_user.group_id IN (" close=")" separator=",">
+			#{id}
+		</foreach>
+		AND sys_user.role_id = 2
+		LIMIT #{pageBean.startIndex}, #{pageBean.pageSize}
+	</select>
+
+	<select id="getNotExerUsersCount" parameterType="com.xzcoder.kaoshi.vo.ExercisesQueryVo" resultType="Integer">
+		SELECT COUNT(1)
+		FROM sys_user
+		WHERE id NOT IN(SELECT user_id FROM exercises WHERE day_date = #{date})
+		<if test="username != null and username != ''">
+			AND sys_user.username LIKE '%${username}%'
+		</if>
+		<foreach collection="groupIds" item="id" open="AND sys_user.group_id IN (" close=")" separator=",">
+			#{id}
+		</foreach>
+		AND sys_user.role_id = 2
+	</select>
+
+
+
+</mapper>

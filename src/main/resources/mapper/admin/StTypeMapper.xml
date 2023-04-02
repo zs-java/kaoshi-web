@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StTypeMapper">
+
+	<!--
+		sql片段
+	 -->
+	 <sql id="select_stt_col">
+	 	exam_st_type.type_id stt_id, exam_st_type.name stt_name,
+		exam_st_type.des stt_des, exam_st_type.sort stt_sort
+	 </sql>
+
+	<!--
+	ResultMap：输出映射
+	-->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamStTypeCustom" id="StTypeResultMap">
+		<id column="stt_id" property="typeId"/>
+		<result column="stt_name" property="name"/>
+		<result column="stt_des" property="des"/>
+		<result column="stt_sort" property="sort"/>
+	</resultMap>
+
+	<!--
+		statement
+	 -->
+	<select id="getAllStTypes" resultMap="StTypeResultMap">
+		SELECT
+		<include refid="select_stt_col" />
+		FROM exam_st_type
+	</select>
+
+</mapper>

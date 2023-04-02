@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"  xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- job bean 扫描 -->
+	<context:component-scan base-package="com.xzcoder.kaoshi.job" />
+
+	<!-- 配置方法映射工厂类 -->
+	<bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+	    <property name="targetObject" ref="clearDbJob"></property>
+	    <property name="targetMethod" value="doWork"></property>
+	    <property name="concurrent" value="false"></property>
+	    <!-- concurrent : false表示等上一个任务执行完后再开启新的任务 -->
+	</bean>
+
+	<!-- 配置任务高度的的时间/周期 -->
+	<bean id="clearDbJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="jobDetail"></property>
+	    <property name="cronExpression" value="0 30 12 * * ? *"></property>
+	    <property name="startDelay" value="3000"></property>
+	</bean>
+
+	<bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+	    <property name="triggers">
+	        <list>
+	           <ref bean="clearDbJobTrigger"/>
+	        </list>
+	    </property>
+	</bean>
+</beans>

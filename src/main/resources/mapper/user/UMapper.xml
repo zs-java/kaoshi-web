@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.user.mapper.UMapper">
+
+	<!--
+	ResultMap
+	 -->
+	 <!-- 封装user对象 -->
+	<resultMap type="com.xzcoder.kaoshi.po.SysUserCustom" id="UserResultMap">
+		<id column="id" property="id"/>
+		<result column="username" property="username"/>
+		<result column="password" property="password"/>
+		<result column="role_id" property="roleId"/>
+		<result column="group_id" property="groupId"/>
+		<result column="readly_name" property="readlyName"/>
+		<result column="gender" property="gender"/>
+		<result column="email" property="email"/>
+		<result column="icon" property="icon"/>
+		<result column="birthday" property="birthday"/>
+		<result column="uuid" property="uuid"/>
+		<result column="login_count" property="loginCount"/>
+		<result column="last_login_date" property="lastLoginDate"/>
+		<result column="reg_date" property="regDate"/>
+	</resultMap>
+	<!-- 封装userCustom对象 -->
+	<resultMap type="com.xzcoder.kaoshi.po.SysUserCustom" id="UserCustomResultMap" extends="UserResultMap">
+		<association property="roleCustom" javaType="com.xzcoder.kaoshi.po.SysRoleCustom">
+			<id column="r_roleId" property="roleId"/>
+			<result column="r_roleName" property="roleName"/>
+			<result column="r_des" property="des"/>
+			<result column="r_sort" property="sort"/>
+		</association>
+		<association property="groupCustom" javaType="com.xzcoder.kaoshi.po.SysGroupCustom">
+			<id column="g_groupId" property="groupId"/>
+			<result column="g_groupPid" property="groupPid"/>
+			<result column="g_groupName" property="groupName"/>
+			<result column="g_sort" property="sort"/>
+		</association>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="getUserByUnameAndPwd" resultMap="UserCustomResultMap">
+		SELECT sys_user.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.GroupMapper.select_group_col" /> ,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.RoleMapper.select_role_col" />
+		FROM sys_user
+		LEFT JOIN sys_group ON sys_group.group_id = sys_user.group_id
+		INNER JOIN sys_role ON sys_role.role_id = sys_user.role_id
+		<where>
+			sys_user.username = #{username} AND sys_user.PASSWORD = #{password}
+		</where>
+	</select>
+
+	<update id="updateLoginCountAddById" parameterType="Integer">
+		UPDATE sys_user SET login_count = login_count + 1
+		<where>
+			id = #{value}
+		</where>
+	</update>
+
+</mapper>

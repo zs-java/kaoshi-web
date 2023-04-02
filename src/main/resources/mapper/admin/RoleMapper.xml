@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.RoleMapper">
+
+	<!--
+	sql
+	 -->
+	<sql id="select_role_col">
+		sys_role.role_id r_roleId,
+		sys_role.role_name r_roleName,
+		sys_role.des r_des,
+		sys_role.sort r_sort
+	</sql>
+	<sql id="select_function_col">
+		sys_function.function_id f_functionId,
+		sys_function.module_id f_moduleId,
+		sys_function.name f_name,
+		sys_function.url f_url,
+		sys_function.icon f_icon,
+		sys_function.sort f_sort
+	</sql>
+	<sql id="where_query_roleName">
+		<if test="roleCustom!=null">
+			<if test="roleCustom.roleName!=null and roleCustom.roleName!=''">
+				AND sys_role.role_name LIKE '%${roleCustom.roleName}%'
+			</if>
+		</if>
+	</sql>
+	<sql id="limit_page">
+		LIMIT #{pageBean.startIndex}, #{pageBean.pageSize};
+	</sql>
+
+	<!--
+	resultMap
+	 -->
+	<resultMap type="com.xzcoder.kaoshi.po.SysRoleCustom" id="roleResultMap">
+		<id column="r_roleId" property="roleId"/>
+		<result column="r_roleName" property="roleName"/>
+		<result column="r_des" property="des"/>
+		<result column="r_sort" property="sort"/>
+	</resultMap>
+	<resultMap type="com.xzcoder.kaoshi.po.SysRoleCustom" id="roleCustomResultMap" extends="roleResultMap">
+		<collection property="functions" ofType="com.xzcoder.kaoshi.po.SysFunction">
+			<id column="f_functionId" property="functionId"/>
+			<result column="f_moduleId" property="moduleId" />
+			<result column="f_name" property="name" />
+			<result column="f_url" property="url" />
+			<result column="f_icon" property="icon" />
+			<result column="f_sort" property="sort" />
+		</collection>
+	</resultMap>
+
+	<!--
+	statement
+	 -->
+	<select id="getAllRoles" resultMap="roleResultMap">
+		SELECT
+		<include refid="select_role_col"></include>
+		FROM sys_role
+	</select>
+
+	<select id="findRolesByRoleQueryVo" parameterType="com.xzcoder.kaoshi.vo.RoleQueryVo" resultMap="roleCustomResultMap">
+		SELECT
+		<include refid="select_role_col" />,
+		<include refid="select_function_col" />
+		FROM sys_role
+		LEFT JOIN sys_role_function ON sys_role_function.role_id = sys_role.role_id
+		LEFT JOIN sys_function ON sys_function.function_id = sys_role_function.function_id
+		<where>
+			<include refid="where_query_roleName"></include>
+		</where>
+		<include refid="limit_page"></include>
+	</select>
+
+	<select id="findRoleCountByRoleQueryVo" parameterType="com.xzcoder.kaoshi.vo.RoleQueryVo" resultType="Integer">
+		SELECT
+			COUNT(*)
+		FROM sys_role
+		<where>
+			<include refid="where_query_roleName"></include>
+		</where>
+	</select>
+
+	<select id="getMAXRoleSort" resultType="Integer">
+		SELECT MAX(sort) FROM sys_role
+	</select>
+
+	<insert id="insertRole" parameterType="com.xzcoder.kaoshi.po.SysRoleCustom">
+		<selectKey keyProperty="roleId" order="AFTER" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO sys_role(
+				role_name
+				<if test="des != null and des != ''">
+					, des
+				</if>
+				, sort)
+		VALUE(
+				#{roleName}
+				<if test="des != null and des != ''">
+					, #{des}
+				</if>
+				, #{sort})
+	</insert>
+
+	<delete id="deleteRoleByRoleId" parameterType="Integer">
+		DELETE FROM sys_role WHERE role_id = #{value}
+	</delete>
+
+	<select id="findRoleCustomByRoleId" parameterType="Integer" resultMap="roleCustomResultMap">
+		SELECT
+		<include refid="select_role_col" />,
+		<include refid="select_function_col" />
+		FROM sys_role
+		LEFT JOIN sys_role_function ON sys_role_function.role_id = sys_role.role_id
+		LEFT JOIN sys_function ON sys_function.function_id = sys_role_function.function_id
+		<where>
+			sys_role.role_id = #{value}
+		</where>
+	</select>
+
+	<select id="findRoleCountByRoleName" parameterType="String" resultType="Integer">
+		SELECT COUNT(*) FROM sys_role WHERE role_name = #{value}
+	</select>
+
+	<update id="updateRole" parameterType="com.xzcoder.kaoshi.po.SysRoleCustom">
+		UPDATE sys_role
+			SET role_name = #{roleName}
+			, des = #{des}
+			WHERE role_id = #{roleId}
+	</update>
+
+	<select id="getReadPrivateStRoleByUserId" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(1) FROM sys_user
+		INNER JOIN sys_role_function ON sys_role_function.role_id = sys_user.role_id
+		INNER JOIN sys_function ON sys_function.function_id = sys_role_function.function_id
+		WHERE sys_function.NAME = '私有题库' AND sys_user.id = #{value};
+	</select>
+
+</mapper>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.SjClassifyMapper">
+
+	<!-- sql：sql片段 -->
+
+	<!-- exam_sj_classify表的所有列 -->
+	<sql id="select_sjc_col">
+		exam_sj_classify.classify_id sjc_id, exam_sj_classify.name sjc_name,
+		exam_sj_classify.pid sjc_pid, exam_sj_classify.sort sjc_sort
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamSjClassifyCustom" id="SjClassifyResultMap">
+		<id column="sjc_id" property="classifyId"/>
+		<result column="sjc_name" property="name"/>
+		<result column="sjc_pid" property="pid"/>
+		<result column="sjc_sort" property="sort"/>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="getAllSjClassify" resultMap="SjClassifyResultMap">
+		SELECT
+		<include refid="select_sjc_col" />
+		FROM exam_sj_classify
+	</select>
+
+	<update id="updateSjClassifyNameById" parameterType="com.xzcoder.kaoshi.po.ExamSjClassifyCustom">
+		UPDATE exam_sj_classify
+		SET NAME = #{name}
+		<where>
+			classify_id = #{classifyId}
+		</where>
+	</update>
+
+	<insert id="insertSjClassify" parameterType="com.xzcoder.kaoshi.po.ExamSjClassifyCustom">
+		<selectKey keyProperty="classifyId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO exam_sj_classify (
+					NAME,
+					pid
+					<if test="sort != null">
+						, sort
+					</if>
+					) VALUE(
+						#{name},
+						#{pid}
+					<if test="sort != null">
+						, #{sort}
+					</if>
+					)
+	</insert>
+
+	<delete id="deleteSjClassifyById" parameterType="Integer">
+		DELETE FROM exam_sj_classify
+		<where>
+			classify_id = #{value}
+		</where>
+	</delete>
+
+	<delete id="deleteSjClassifyByIdArray">
+		DELETE FROM exam_sj_classify
+		<where>
+			<foreach collection="array" item="id" open="AND classify_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<select id="getChildIdByPid" parameterType="Integer" resultType="Integer">
+		SELECT classify_id FROM exam_sj_classify
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getSjClassifyByPid" parameterType="Integer" resultMap="SjClassifyResultMap">
+		SELECT
+		<include refid="select_sjc_col" />
+		FROM exam_sj_classify
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+</mapper>

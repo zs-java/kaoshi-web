@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StClassifyMapper">
+
+	<!-- sql：sql片段 -->
+
+	<!-- exam_st_classify表的所有列 -->
+	<sql id="select_stc_col">
+		exam_st_classify.classify_id stc_id, exam_st_classify.name stc_name,
+		exam_st_classify.pid stc_pid, exam_st_classify.sort stc_sort
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamStClassifyCustom" id="StClassifyResultMap">
+		<id column="stc_id" property="classifyId"/>
+		<result column="stc_name" property="name"/>
+		<result column="stc_pid" property="pid"/>
+		<result column="stc_sort" property="sort"/>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="getAllStClassify" resultMap="StClassifyResultMap">
+		SELECT
+		<include refid="select_stc_col" />
+		FROM exam_st_classify
+	</select>
+
+	<update id="updateStClassifyNameById" parameterType="com.xzcoder.kaoshi.po.ExamStClassifyCustom">
+		UPDATE exam_st_classify
+		SET NAME = #{name}
+		<where>
+			classify_id = #{classifyId}
+		</where>
+	</update>
+
+	<insert id="insertStClassify" parameterType="com.xzcoder.kaoshi.po.ExamStClassifyCustom">
+		<selectKey keyProperty="classifyId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO exam_st_classify (
+					NAME,
+					pid
+					<if test="sort != null">
+						, sort
+					</if>
+					) VALUE(
+						#{name},
+						#{pid}
+					<if test="sort != null">
+						, #{sort}
+					</if>
+					)
+	</insert>
+
+	<delete id="deleteStClassifyById" parameterType="Integer">
+		DELETE FROM exam_st_classify
+		<where>
+			classify_id = #{value}
+		</where>
+	</delete>
+
+	<delete id="deleteStClassifyByIdArray">
+		DELETE FROM exam_st_classify
+		<where>
+			<foreach collection="array" item="id" open="AND classify_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<select id="getChildIdByPid" parameterType="Integer" resultType="Integer">
+		SELECT classify_id FROM exam_st_classify
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getStClassifysByPid" parameterType="Integer" resultMap="StClassifyResultMap">
+		SELECT
+		<include refid="select_stc_col" />
+		FROM exam_st_classify
+		<where>
+			pid = #{value}
+		</where>
+	</select>
+
+	<select id="getAllStClassifyIds" resultType="Integer">
+		SELECT classify_id FROM exam_st_classify
+	</select>
+
+</mapper>

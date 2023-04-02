@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"  xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 配置service的bean -->
+	<bean id="adminBaseService" class="com.xzcoder.kaoshi.admin.service.impl.AdminBaseServiceImpl"></bean>
+	<bean id="moduleService" class="com.xzcoder.kaoshi.admin.service.impl.ModuleServiceImpl"></bean>
+	<bean id="groupService" class="com.xzcoder.kaoshi.admin.service.impl.GroupServiceImpl"></bean>
+	<bean id="userService" class="com.xzcoder.kaoshi.admin.service.impl.UserServiceImpl"></bean>
+	<bean id="roleService" class="com.xzcoder.kaoshi.admin.service.impl.RoleServiceImpl"></bean>
+
+	<bean id="stClassifyService" class="com.xzcoder.kaoshi.admin.service.impl.StClassifyServiceImpl"></bean>
+	<bean id="stLevelfyService" class="com.xzcoder.kaoshi.admin.service.impl.StLevelServiceImpl"></bean>
+	<bean id="stKnowledgeService" class="com.xzcoder.kaoshi.admin.service.impl.StKnowledgeServiceImpl"></bean>
+	<bean id="sjClassifyService" class="com.xzcoder.kaoshi.admin.service.impl.SjClassifyServiceImpl"></bean>
+	<bean id="ksClassifyService" class="com.xzcoder.kaoshi.admin.service.impl.KsClassifyServiceImpl"></bean>
+
+	<bean  id="stTypeService" class="com.xzcoder.kaoshi.admin.service.impl.StTypeServiceImpl"></bean>
+	<bean id="stMainService" class="com.xzcoder.kaoshi.admin.service.impl.StMainServiceImpl"></bean>
+
+	<bean id="sjDataService" class="com.xzcoder.kaoshi.admin.service.impl.SjDataServiceImpl"></bean>
+	<bean id="ksDataService" class="com.xzcoder.kaoshi.admin.service.impl.KsDataServiceImpl"></bean>
+
+	<bean id="uService" class="com.xzcoder.kaoshi.user.service.impl.UserServiceImpl"></bean>
+	<bean id="ksUserService" class="com.xzcoder.kaoshi.user.service.impl.KsUserServiceImpl"></bean>
+
+	<bean id="wrongService" class="com.xzcoder.kaoshi.user.service.impl.WrongServiceImpl"></bean>
+	<bean id="exercisesService" class="com.xzcoder.kaoshi.admin.service.impl.ExercisesServiceImpl"></bean>
+	<bean id="stWrongService" class="com.xzcoder.kaoshi.admin.service.impl.StWrongServiceImpl"></bean>
+
+</beans>

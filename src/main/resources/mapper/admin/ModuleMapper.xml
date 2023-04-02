@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.ModuleMapper">
+
+	<!-- sql片段，查询所有功能时需要查询的列名 -->
+	<sql id="select_module_function_col">
+		m.module_id m_moduleId, m.name m_name,
+		m.icon m_icon, m.sort m_sort,
+		f.function_id f_functionId, f.module_id f_moduleId,
+		f.name f_name, f.url f_url, f.icon f_icon, f.sort f_sort
+	</sql>
+
+	<!-- 根据user_id查询的条件代码片段 -->
+	<sql id="where_user_id">
+		u.id = #{value}
+	</sql>
+
+	<!-- 查询所有功能结果映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.SysModuleCustom" id="findAllModuleAndFunctionResultMap">
+		<id column="m_moduleId" property="moduleId"/>
+		<result column="m_name" property="name" />
+		<result column="m_icon" property="icon" />
+		<result column="m_sort" property="sort" />
+
+		<collection property="functions" ofType="com.xzcoder.kaoshi.po.SysFunction">
+			<id column="f_functionId" property="functionId"/>
+			<result column="f_moduleId" property="moduleId" />
+			<result column="f_name" property="name" />
+			<result column="f_url" property="url" />
+			<result column="f_icon" property="icon" />
+			<result column="f_sort" property="sort" />
+		</collection>
+	</resultMap>
+
+
+	<!-- 查询所有功能 -->
+	<select id="findAllModuleAndFunction" resultMap="findAllModuleAndFunctionResultMap">
+		SELECT
+		<include refid="select_module_function_col"></include>
+		FROM  sys_module m
+		RIGHT JOIN sys_function f ON m.module_id = f.module_id
+	</select>
+
+	<!-- 通过用户id查询该用户角色对应的功能与模块 -->
+	<select id="findModuleAndFunctionByUserId" parameterType="Integer" resultMap="findAllModuleAndFunctionResultMap">
+		SELECT
+		<include refid="select_module_function_col"></include>
+		FROM  sys_module m
+		RIGHT JOIN sys_function f ON m.module_id = f.module_id
+		INNER JOIN sys_role_function rf ON rf.function_id = f.function_id
+		INNER JOIN sys_role r ON r.role_id = rf.role_id
+		INNER JOIN sys_user u  ON u.role_id = r.role_id
+		<where>
+			<include refid="where_user_id"></include>
+		</where>
+	</select>
+
+</mapper>

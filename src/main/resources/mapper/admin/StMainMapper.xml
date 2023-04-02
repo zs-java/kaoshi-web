@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.StMainMapper">
+
+	<!--
+		sql片段
+	 -->
+	 <sql id="where_query_vo">
+	 	<if test="stMainCustom != null and stMainCustom.title != null">
+		 	AND title LIKE '%${stMainCustom.title}%'
+	 	</if>
+	 	<if test="stTypeCustom != null and stTypeCustom.typeId != null and stTypeCustom.typeId > 0">
+		 	AND st_type_id = #{stTypeCustom.typeId}
+	 	</if>
+	 	<if test="stClassifyCustom != null and stClassifyCustom.classifyId != null and stClassifyCustom.classifyId > 0">
+		 	AND st_classify_id = #{stClassifyCustom.classifyId}
+	 	</if>
+	 	<if test="stLevelCustom != null and stLevelCustom.levelId != null and stLevelCustom.levelId > 0">
+		 	AND st_level_id = #{stLevelCustom.levelId}
+	 	</if>
+	 	<if test="stKnowledgeCustom != null and stKnowledgeCustom.classifyId != null and stKnowledgeCustom.classifyId > 0">
+		 	AND st_knowledge_id = #{stKnowledgeCustom.classifyId}
+	 	</if>
+	 	<if test="stMainCustom != null">
+	 		<if test="stMainCustom.visable == null">
+	 		AND visable = 1
+	 		</if>
+	 		<if test="stMainCustom.visable != null and stMainCustom.visable >= 0">
+	 		AND visable = #{stMainCustom.visable}
+	 		</if>
+	 	</if>
+	 </sql>
+	 <sql id="where_not_in_ids">
+	 	<if test="questionIds != null">
+	 		<foreach collection="questionIds" item="id" open="AND question_id NOT IN (" close=")" separator=",">
+	 			#{id}
+	 		</foreach>
+	 	</if>
+	 </sql>
+	 <sql id="where_st_exer">
+		<foreach collection="classifyIds" item="id" open="AND st_classify_id IN (" close=")" separator=",">
+			#{id}
+		</foreach>
+		<foreach collection="knowledgeIds" item="id" open="AND st_knowledge_id IN (" close=")" separator=",">
+ 			#{id}
+ 		</foreach>
+ 		<foreach collection="levelIds" item="id" open="AND st_level_id IN (" close=")" separator=",">
+ 			#{id}
+ 		</foreach>
+	</sql>
+
+	 <!--
+	 	ResultMap：输出映射
+	  -->
+	 <resultMap type="com.xzcoder.kaoshi.po.ExamStMainCustom" id="StMainResultMap">
+	 	<id column="question_id" property="questionId"/>
+	 	<result column="title" property="title"/>
+	 	<result column="user_id" property="userId"/>
+	 	<result column="st_type_id" property="stTypeId"/>
+	 	<result column="st_classify_id" property="stClassifyId"/>
+	 	<result column="st_level_id" property="stLevelId"/>
+	 	<result column="st_knowledge_id" property="stKnowledgeId"/>
+	 	<result column="sort" property="sort"/>
+	 	<result column="del" property="del"/>
+	 	<result column="ins_user" property="insUser"/>
+	 	<result column="ins_date" property="insDate"/>
+	 	<result column="upd_user" property="updUser"/>
+	 	<result column="upd_date" property="updDate"/>
+	 </resultMap>
+
+	 <resultMap type="com.xzcoder.kaoshi.po.ExamStMainCustom" id="StMainCustomResultMap" extends="StMainResultMap">
+	 	<association property="stTypeCustom" javaType="com.xzcoder.kaoshi.po.ExamStTypeCustom">
+		 	<id column="stt_id" property="typeId"/>
+			<result column="stt_name" property="name"/>
+			<result column="stt_des" property="des"/>
+			<result column="stt_sort" property="sort"/>
+	 	</association>
+	 	<association property="stClassifyCustom" javaType="com.xzcoder.kaoshi.po.ExamStClassifyCustom">
+		 	<id column="stc_id" property="classifyId"/>
+			<result column="stc_name" property="name"/>
+			<result column="stc_pid" property="pid"/>
+			<result column="stc_sort" property="sort"/>
+	 	</association>
+	 	<association property="stLevelCustom" javaType="com.xzcoder.kaoshi.po.ExamStLevelCustom">
+		 	<id column="stl_id" property="levelId"/>
+			<result column="stl_name" property="name"/>
+			<result column="stl_pid" property="pid"/>
+			<result column="stl_sort" property="sort"/>
+	 	</association>
+	 	<association property="stKnowledgeCustom" javaType="com.xzcoder.kaoshi.po.ExamStKnowledgeCustom">
+		 	<id column="stk_id" property="classifyId"/>
+			<result column="stk_name" property="name"/>
+			<result column="stk_pid" property="pid"/>
+			<result column="stk_sort" property="sort"/>
+	 	</association>
+	 </resultMap>
+
+	<!--
+		statement
+	 -->
+	<select id="findStListByStQueryVo" parameterType="com.xzcoder.kaoshi.vo.StMainQueryVo" resultMap="StMainCustomResultMap">
+		SELECT exam_st_main.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StTypeMapper.select_stt_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StClassifyMapper.select_stc_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StLevelMapper.select_stl_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StKnowledgeMapper.select_stk_col" />
+		FROM exam_st_main
+		INNER JOIN exam_st_type ON exam_st_type.type_id = exam_st_main.st_type_id
+		INNER JOIN exam_st_classify ON exam_st_classify.classify_id = exam_st_main.st_classify_id
+		INNER JOIN exam_st_level ON exam_st_level.level_id = exam_st_main.st_level_id
+		INNER JOIN exam_st_knowledge ON exam_st_knowledge.classify_id = exam_st_main.st_knowledge_id
+		<where>
+			<include refid="where_query_vo" />
+		</where>
+		ORDER BY exam_st_main.ins_date DESC
+		limit #{pageBean.startIndex}, #{pageBean.pageSize};
+	</select>
+
+	<select id="getStCountByStQueryVo" parameterType="com.xzcoder.kaoshi.vo.StMainQueryVo" resultType="Integer">
+		SELECT COUNT(*)
+		FROM exam_st_main
+		<where>
+			<include refid="where_query_vo" />
+		</where>
+	</select>
+
+	<select id="getStMainMaxSort" resultType="Integer">
+		SELECT MAX(sort) FROM exam_st_main
+	</select>
+
+	<insert id="insertStMain" parameterType="com.xzcoder.kaoshi.po.ExamStMainCustom">
+		<selectKey keyProperty="questionId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO exam_st_main
+					(title,
+					user_id,
+					st_type_id,
+					st_classify_id,
+					st_level_id,
+					st_knowledge_id,
+					sort,
+					ins_user,
+					ins_date,
+					visable)
+		VALUE
+					(#{title},
+					#{userId},
+					#{stTypeId},
+					#{stClassifyId},
+					#{stLevelId},
+					#{stKnowledgeId},
+					#{sort},
+					#{insUser},
+					#{insDate},
+					#{visable})
+	</insert>
+
+	<select id="getStMainById" parameterType="Integer" resultMap="StMainCustomResultMap">
+		SELECT exam_st_main.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StTypeMapper.select_stt_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StClassifyMapper.select_stc_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StLevelMapper.select_stl_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StKnowledgeMapper.select_stk_col" />
+		FROM exam_st_main
+		INNER JOIN exam_st_type ON exam_st_type.type_id = exam_st_main.st_type_id
+		INNER JOIN exam_st_classify ON exam_st_classify.classify_id = exam_st_main.st_classify_id
+		INNER JOIN exam_st_level ON exam_st_level.level_id = exam_st_main.st_level_id
+		INNER JOIN exam_st_knowledge ON exam_st_knowledge.classify_id = exam_st_main.st_knowledge_id
+		<where>
+			exam_st_main.question_id = #{value}
+		</where>
+	</select>
+
+	<update id="updateStMainById" parameterType="com.xzcoder.kaoshi.po.ExamStMainCustom">
+		UPDATE exam_st_main
+		SET title = #{title},
+		st_classify_id = #{stClassifyId},
+		st_level_id = #{stLevelId},
+		st_knowledge_id = #{stKnowledgeId},
+		upd_user = #{updUser},
+		upd_date = #{updDate}
+		<if test="visable != null and visable != -1">
+		, visable = #{visable}
+		</if>
+		<where>
+			question_id = #{questionId}
+		</where>
+	</update>
+
+	<select id="getStTypeIdById" parameterType="Integer" resultType="Integer">
+		SELECT st_type_id FROM exam_st_main
+		<where>
+			question_id = #{value}
+		</where>
+	</select>
+
+	<delete id="deleteStMain" parameterType="Integer">
+		DELETE FROM exam_st_main WHERE question_id = #{value}
+	</delete>
+
+	<delete id="deleteStMainList">
+		DELETE FROM exam_st_main
+		<where>
+			<foreach collection="array" item="id" open="AND question_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</delete>
+
+	<select id="getStUseableCountByStQueryVo" parameterType="com.xzcoder.kaoshi.vo.StMainQueryVo" resultType="Integer">
+		SELECT COUNT(*)
+		FROM exam_st_main
+		<where>
+			<include refid="where_query_vo" />
+			<include refid="where_not_in_ids" />
+		</where>
+	</select>
+
+	<select id="findStUseableByStQueryVo" parameterType="com.xzcoder.kaoshi.vo.StMainQueryVo" resultMap="StMainCustomResultMap">
+		SELECT exam_st_main.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StTypeMapper.select_stt_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StClassifyMapper.select_stc_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StLevelMapper.select_stl_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StKnowledgeMapper.select_stk_col" />
+		FROM exam_st_main
+		INNER JOIN exam_st_type ON exam_st_type.type_id = exam_st_main.st_type_id
+		INNER JOIN exam_st_classify ON exam_st_classify.classify_id = exam_st_main.st_classify_id
+		INNER JOIN exam_st_level ON exam_st_level.level_id = exam_st_main.st_level_id
+		INNER JOIN exam_st_knowledge ON exam_st_knowledge.classify_id = exam_st_main.st_knowledge_id
+		<where>
+			<include refid="where_query_vo" />
+			<include refid="where_not_in_ids" />
+		</where>
+		ORDER BY exam_st_main.ins_date DESC
+		limit #{pageBean.startIndex}, #{pageBean.pageSize};
+	</select>
+
+	<select id="findStListByIds" parameterType="com.xzcoder.kaoshi.vo.StMainQueryVo" resultMap="StMainCustomResultMap">
+		SELECT exam_st_main.*,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StTypeMapper.select_stt_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StClassifyMapper.select_stc_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StLevelMapper.select_stl_col" />,
+			<include refid="com.xzcoder.kaoshi.admin.mapper.StKnowledgeMapper.select_stk_col" />
+		FROM exam_st_main
+		INNER JOIN exam_st_type ON exam_st_type.type_id = exam_st_main.st_type_id
+		INNER JOIN exam_st_classify ON exam_st_classify.classify_id = exam_st_main.st_classify_id
+		INNER JOIN exam_st_level ON exam_st_level.level_id = exam_st_main.st_level_id
+		INNER JOIN exam_st_knowledge ON exam_st_knowledge.classify_id = exam_st_main.st_knowledge_id
+		<where>
+		<if test="questionIds != null">
+	 		<foreach collection="questionIds" item="id" open="AND question_id IN (" close=")" separator=",">
+	 			#{id}
+	 		</foreach>
+	 	</if>
+		</where>
+		ORDER BY exam_st_main.ins_date DESC
+	</select>
+
+	<select id="findStIdListByVo" parameterType="com.xzcoder.kaoshi.vo.StMainQueryVo" resultType="Integer">
+		SELECT question_id FROM exam_st_main
+		<where>
+			<include refid="where_st_exer"></include>
+			AND del = 0
+			AND st_type_id IN (1,2,3,4)
+			<!-- 只能访问公开的题目 -->
+			AND visable = 1
+		</where>
+	</select>
+
+	<select id="getStVisableById" parameterType="Integer" resultType="Integer">
+		select visable from exam_st_main
+		<where>
+			AND question_id = #{value}
+		</where>
+	</select>
+
+</mapper>

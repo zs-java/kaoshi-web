@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.KsDataMapper">
+
+	<!-- sql：sql片段 -->
+	<sql id="where_ks_query">
+		<if test="ksDataCustom != null">
+			<if test="ksDataCustom.ksClassifyId != null and ksDataCustom.ksClassifyId > 0">
+				exam_ks_data.ks_classify_id = #{ksDataCustom.ksClassifyId}
+			</if>
+			<if test="ksDataCustom.name != null and ksDataCustom.name != ''">
+				exam_ks_data.name like '%${ksDataCustom.name}%'
+			</if>
+			<if test="ksDataCustom.insUser != null and ksDataCustom.insUser != ''">
+				exam_ks_data.ins_user like '%${ksDataCustom.insUser}%'
+			</if>
+		</if>
+	</sql>
+
+	<sql id="where_monitor_query">
+		<if test="ksMonitor != null and ksMonitor.ksId != null and ksMonitor.ksId > 0">
+			AND exam_ks_data.ks_id = #{ksMonitor.ksId}
+		</if>
+	</sql>
+
+	<!-- resultMap：输出映射 -->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamKsDataCustom" id="ksDataResultMap">
+		<id column="ks_id" property="ksId"/>
+		<result column="sj_id" property="sjId"/>
+		<result column="ks_classify_id" property="ksClassifyId"/>
+		<result column="name" property="name"/>
+		<result column="des" property="des"/>
+		<result column="pass_score" property="passScore"/>
+		<result column="max_times" property="maxTimes"/>
+		<result column="page_size" property="pageSize"/>
+		<result column="begin_time" property="beginTime"/>
+		<result column="end_time" property="endTime"/>
+		<result column="total_time" property="totalTime"/>
+		<result column="user_signup_flg" property="userSignupFlg"/>
+		<result column="signup_begin_time" property="signupBeginTime"/>
+		<result column="signup_end_time" property="signupEndTime"/>
+		<result column="passing_again_flg" property="passingAgainFlg"/>
+		<result column="qsn_random_flg" property="qsnRandomFlg"/>
+		<result column="time_type" property="timeType"/>
+		<result column="disable_time" property="disableTime"/>
+		<result column="disable_submit" property="disableSubmit"/>
+		<result column="result_publish_time" property="resultPublishTime"/>
+		<result column="publish_rightkey_flg" property="publishRightkeyFlg"/>
+		<result column="result_rank_flg" property="resultRankFlg"/>
+		<result column="review" property="review"/>
+		<result column="pic" property="pic"/>
+		<result column="uuid" property="uuid"/>
+		<result column="del" property="del"/>
+		<result column="ins_user" property="insUser"/>
+		<result column="ins_date" property="insDate"/>
+		<result column="upd_user" property="updUser"/>
+		<result column="upd_date" property="updDate"/>
+		<result column="select_flg" property="selectFlg"/>
+		<result column="option_random_flg" property="optionRandomFlg"/>
+		<result column="credit" property="credit"/>
+		<result column="allow_ip" property="allowIp"/>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.ExamKsDataCustom" id="ksDataCustomResultMap" extends="ksDataResultMap">
+		<association property="ksClassifyCustom" javaType="com.xzcoder.kaoshi.po.ExamKsClassifyCustom">
+			<id column="ksc_id" property="classifyId"/>
+			<result column="ksc_name" property="name"/>
+			<result column="ksc_pid" property="pid"/>
+			<result column="ksc_sort" property="sort"/>
+		</association>
+		<association property="sjDataCustom" javaType="com.xzcoder.kaoshi.po.ExamSjDataCustom">
+			<id column="sj_id" property="sjId"/>
+			<result column="sj_title" property="title"/>
+			<result column="sj_classify_id" property="sjClassifyId"/>
+			<result column="sj_des" property="des"/>
+			<result column="sj_total_score" property="totalScore"/>
+			<result column="sj_count" property="count"/>
+			<result column="sj_review" property="review"/>
+			<result column="sj_del" property="del"/>
+			<result column="sj_ins_user" property="insUser"/>
+			<result column="sj_ins_date" property="insDate"/>
+			<result column="sj_upd_user" property="updUser"/>
+			<result column="sj_upd_date" property="updDate"/>
+			<result column="js_gdxt" property="gdxt"/>
+			<result column="sj_sjxt" property="sjxt"/>
+			<result column="sj_xzst" property="xzst"/>
+			<association property="sjClassifyCustom" javaType="com.xzcoder.kaoshi.po.ExamSjClassifyCustom">
+				<id column="sjc_id" property="classifyId"/>
+				<result column="sjc_name" property="name"/>
+				<result column="sjc_pid" property="pid"/>
+				<result column="sjc_sort" property="sort"/>
+			</association>
+		</association>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.ExamKsDataCustom" id="KsUserDataResultMap" extends="ksDataCustomResultMap">
+		<collection property="userInfoList" ofType="com.xzcoder.kaoshi.po.ExamKsUserCustom" >
+			<id column="ku_id" property="id"/>
+			<result column="ku_ks_id" property="ksId"/>
+			<result column="ku_sj_id" property="sjId"/>
+			<result column="ku_user_id" property="userId"/>
+			<result column="ku_signup_time" property="signupTime"/>
+			<result column="ku_signup_state" property="signupState"/>
+			<result column="ku_review_time" property="reviewTime"/>
+			<result column="ku_times" property="times"/>
+			<result column="ku_begin_time" property="beginTime"/>
+			<result column="ku_end_time" property="endTime"/>
+			<result column="ku_score" property="score"/>
+			<result column="ku_state" property="state"/>
+			<result column="ku_d_xtmix" property="dXtmix"/>
+			<result column="ku_daan_data" property="daanData"/>
+			<result column="ku_rdaan_data" property="rdaanData"/>
+			<result column="ku_fen_score" property="fenScore"/>
+			<result column="ku_read_flg" property="readFlg"/>
+			<result column="ku_wrong_flg" property="wrongFlg"/>
+			<result column="ku_del" property="del"/>
+			<result column="ku_ins_user" property="insUser"/>
+			<result column="ku_ins_date" property="insDate"/>
+			<result column="ku_upd_user" property="updUser"/>
+			<result column="ku_upd_date" property="updDate"/>
+		</collection>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.ExamKsMonitor" id="IdAndNameResultMap">
+		<id column="ks_id" property="ksId"/>
+		<result column="name" property="name"/>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.ExamKsMonitor" id="ksMonitorResultMap">
+		<id column="ks_id" property="ksId"/>
+		<result column="name" property="name"/>
+		<result column="begin_time" property="beginTime"/>
+		<result column="end_time" property="endTime"/>
+		<result column="pass_score" property="passScore"/>
+		<result column="total_score" property="totalScore"/>
+	</resultMap>
+
+	<!-- statement -->
+	<select id="findKsDataListByVo" parameterType="com.xzcoder.kaoshi.vo.KsDataQueryVo" resultMap="ksDataCustomResultMap">
+		SELECT exam_ks_data.*,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.KsClassifyMapper.select_ksc_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjDataMapper.select_sj_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjClassifyMapper.select_sjc_col" />
+		FROM exam_ks_data
+		INNER JOIN exam_ks_classify ON exam_ks_classify.classify_id = exam_ks_data.ks_classify_id
+		INNER JOIN exam_sj_data ON exam_sj_data.sj_id = exam_ks_data.sj_id
+		INNER JOIN exam_sj_classify ON exam_sj_classify.classify_id = exam_sj_data.sj_classify_id
+		<where>
+			<include refid="where_ks_query" />
+			AND exam_ks_data.del = 0
+		</where>
+		ORDER BY exam_ks_data.ins_date DESC
+		limit #{pageBean.startIndex}, #{pageBean.pageSize}
+	</select>
+
+	<select id="getKsDataCountByVo" parameterType="com.xzcoder.kaoshi.vo.KsDataQueryVo" resultType="Integer">
+		SELECT COUNT(*)
+		FROM exam_ks_data
+		<where>
+			<include refid="where_ks_query" />
+			AND exam_ks_data.del = 0
+		</where>
+	</select>
+
+	<insert id="insertKsData" parameterType="com.xzcoder.kaoshi.po.ExamKsDataCustom">
+		<selectKey keyProperty="ksId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		INSERT INTO exam_ks_data(sj_id, ks_classify_id, NAME, des, pass_score, max_times, page_size,
+			begin_time, end_time, total_time, user_signup_flg, signup_begin_time, signup_end_time,
+			passing_again_flg, qsn_random_flg, time_type, disable_time, disable_submit,
+			result_publish_time, publish_rightkey_flg, result_rank_flg, review, pic, UUID, del,
+			ins_user, ins_date, select_flg, option_random_flg
+			)
+		VALUE(#{sjId}, #{ksClassifyId}, #{name}, #{des}, #{passScore}, #{maxTimes}, #{pageSizeInt},
+			#{beginTime}, #{endTime}, #{totalTime}, #{userSignupInt}, #{signupBeginTime}, #{signupEndTime},
+			#{passingAgainInt}, #{qsnRandomInt}, #{timeTypeInt}, #{disableTime}, #{disableSubmit},
+			#{resultPublishTime}, #{publishRightkeyInt}, #{resultRankInt}, #{reviewInt}, #{pic}, #{uuid}, 0,
+			#{insUser}, #{insDate}, #{selectInt}, #{optionRandomInt}
+		)
+	</insert>
+
+	<select id="getExamKsDataById" parameterType="Integer" resultMap="KsUserDataResultMap">
+		SELECT exam_ks_data.*,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.KsClassifyMapper.select_ksc_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjDataMapper.select_sj_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjClassifyMapper.select_sjc_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.KsUserMapper.select_ku_col" />
+		FROM exam_ks_data
+		LEFT JOIN exam_ks_user ON exam_ks_user.ks_id = exam_ks_data.ks_id
+		INNER JOIN exam_ks_classify ON exam_ks_classify.classify_id = exam_ks_data.ks_classify_id
+		INNER JOIN exam_sj_data ON exam_sj_data.sj_id = exam_ks_data.sj_id
+		INNER JOIN exam_sj_classify ON exam_sj_classify.classify_id = exam_sj_data.sj_classify_id
+		<where>
+			AND exam_ks_data.del = 0
+			AND exam_ks_data.ks_id = #{value}
+		</where>
+	</select>
+
+	<select id="getExamKsDataByUuid" parameterType="Integer" resultMap="KsUserDataResultMap">
+		SELECT exam_ks_data.*,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.KsClassifyMapper.select_ksc_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjDataMapper.select_sj_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjClassifyMapper.select_sjc_col" />,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.KsUserMapper.select_ku_col" />
+		FROM exam_ks_data
+		LEFT JOIN exam_ks_user ON exam_ks_user.ks_id = exam_ks_data.ks_id
+		INNER JOIN exam_ks_classify ON exam_ks_classify.classify_id = exam_ks_data.ks_classify_id
+		INNER JOIN exam_sj_data ON exam_sj_data.sj_id = exam_ks_data.sj_id
+		INNER JOIN exam_sj_classify ON exam_sj_classify.classify_id = exam_sj_data.sj_classify_id
+		<where>
+			AND exam_ks_data.del = 0
+			AND exam_ks_data.uuid = #{value}
+		</where>
+	</select>
+
+	<select id="updateKsData" parameterType="com.xzcoder.kaoshi.po.ExamKsDataCustom">
+		UPDATE exam_ks_data
+		SET sj_id = #{sjId},
+		  ks_classify_id = #{ksClassifyId}, name = #{name}, des = #{des}, pass_score = #{passScore},
+		  max_times = #{maxTimes}, page_size = #{pageSizeInt}, begin_time = #{beginTime}, end_time = #{endTime},
+		  total_time = #{totalTime}, user_signup_flg = #{userSignupInt}, signup_begin_time = #{signupBeginTime},
+		  signup_end_time = #{signupEndTime}, passing_again_flg = #{passingAgainInt}, qsn_random_flg = #{qsnRandomInt},
+		  time_type = #{timeTypeInt}, disable_time = #{disableTime}, disable_submit = #{disableSubmit},
+		  result_publish_time = #{resultPublishTime}, publish_rightkey_flg = #{publishRightkeyInt}, result_rank_flg = #{resultRankInt},
+		  upd_user = #{updUser}, upd_date = #{updDate}, select_flg = #{selectInt},
+		  option_random_flg = #{optionRandomInt}
+		  <if test="pic != null and pic != ''">
+			  , pic = #{pic}
+		  </if>
+		WHERE ks_id = #{ksId}
+	</select>
+
+	<update id="deleteKsData">
+		UPDATE exam_ks_data
+		SET del = 1, upd_user = #{updUser}, upd_date = #{updDate}
+		<where>
+			AND ks_id = #{ksId}
+		</where>
+	</update>
+
+	<select id="getAllExamIdAndNameList" resultMap="IdAndNameResultMap">
+		SELECT exam_ks_data.ks_id, exam_ks_data.NAME
+		FROM exam_ks_data
+		<where>
+			AND exam_ks_data.del = 0
+		</where>
+		ORDER BY exam_ks_data.ins_date DESC
+	</select>
+
+	<select id="getKsMonitorCountByVo" parameterType="com.xzcoder.kaoshi.vo.KsMonitorQueryVo" resultType="Integer">
+		SELECT COUNT(*)
+		FROM exam_ks_data
+		<where>
+			AND exam_ks_data.del = 0
+			<include refid="where_monitor_query" />
+		</where>
+	</select>
+
+	<select id="findKsMonitorListByVo" parameterType="com.xzcoder.kaoshi.vo.KsMonitorQueryVo" resultMap="ksMonitorResultMap">
+		SELECT exam_ks_data.ks_id, exam_ks_data.NAME, exam_ks_data.begin_time, exam_ks_data.end_time,
+		exam_ks_data.pass_score, exam_sj_data.total_score
+		FROM exam_ks_data
+		INNER JOIN exam_sj_data ON exam_sj_data.sj_id = exam_ks_data.sj_id
+		<where>
+			AND exam_ks_data.del = 0
+			<include refid="where_monitor_query" />
+		</where>
+		ORDER BY exam_ks_data.ins_date DESC
+		LIMIT #{pageBean.startIndex}, #{pageBean.pageSize}
+	</select>
+
+</mapper>

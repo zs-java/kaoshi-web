@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzcoder.kaoshi.admin.mapper.SjDataMapper">
+
+	<!--
+		sql片段
+	 -->
+	 <sql id="select_sj_col">
+		exam_sj_data.sj_id sj_id, exam_sj_data.title sj_title, exam_sj_data.sj_classify_id sj_classify_id,
+		exam_sj_data.des sj_des, exam_sj_data.gdxt js_gdxt, exam_sj_data.sjxt sj_sjxt, exam_sj_data.xzst sj_xzst,
+		exam_sj_data.total_score sj_total_score, exam_sj_data.COUNT sj_count, exam_sj_data.review sj_review,
+		exam_sj_data.del sj_del, exam_sj_data.ins_user sj_ins_user, exam_sj_data.ins_date sj_ins_date,
+		exam_sj_data.upd_user sj_upd_user, exam_sj_data.upd_date sj_upd_date
+	 </sql>
+	 <sql id="where_query_sj">
+	 	<if test="sjDataCustom != null and sjDataCustom.sjClassifyId != null and sjDataCustom.sjClassifyId > 0">
+	 		AND sj_classify_id = #{sjDataCustom.sjClassifyId}
+	 	</if>
+	 	<if test="sjDataCustom != null and sjDataCustom.title != null">
+	 		AND title like '%${sjDataCustom.title}%'
+	 	</if>
+	 	<if test="sjDataCustom != null and sjDataCustom.insUser != null">
+	 		AND ins_user like '%${sjDataCustom.insUser}%'
+	 	</if>
+	 	<if test="reviewStauts != null and reviewStauts >= 0">
+	 		AND review = #{reviewStauts}
+	 	</if>
+	 	<if test="sjDataCustom != null">
+	 		<if test="sjDataCustom == null">
+	 		AND visable = 1
+	 		</if>
+	 		<if test="sjDataCustom.visable != null and sjDataCustom.visable >= 0">
+	 		AND visable = #{sjDataCustom.visable}
+	 		</if>
+	 	</if>
+	 </sql>
+
+	<!--
+		ResultMap：输出映射
+	-->
+	<resultMap type="com.xzcoder.kaoshi.po.ExamSjDataCustom" id="SjDataResultMap">
+		<id column="sj_id" property="sjId"/>
+		<result column="title" property="title"/>
+		<result column="sj_classify_id" property="sjClassifyId"/>
+		<result column="des" property="des"/>
+		<result column="total_score" property="totalScore"/>
+		<result column="count" property="count"/>
+		<result column="review" property="review"/>
+		<result column="del" property="del"/>
+		<result column="ins_user" property="insUser"/>
+		<result column="ins_date" property="insDate"/>
+		<result column="upd_user" property="updUser"/>
+		<result column="upd_date" property="updDate"/>
+		<result column="gdxt" property="gdxt"/>
+		<result column="sjxt" property="sjxt"/>
+		<result column="xzst" property="xzst"/>
+		<result column="visable" property="visable"/>
+	</resultMap>
+
+	<resultMap type="com.xzcoder.kaoshi.po.ExamSjDataCustom" id="SjDataCustomResultMap" extends="SjDataResultMap">
+		<association property="sjClassifyCustom" javaType="com.xzcoder.kaoshi.po.ExamSjClassifyCustom">
+			<id column="sjc_id" property="classifyId"/>
+			<result column="sjc_name" property="name"/>
+			<result column="sjc_pid" property="pid"/>
+			<result column="sjc_sort" property="sort"/>
+		</association>
+	</resultMap>
+
+	<!--
+		statement
+	 -->
+	<select id="findSjDataListByVo" parameterType="com.xzcoder.kaoshi.vo.SjDataQueryVo" resultMap="SjDataCustomResultMap">
+		SELECT exam_sj_data.* ,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjClassifyMapper.select_sjc_col" />
+		FROM exam_sj_data
+		INNER JOIN exam_sj_classify ON exam_sj_classify.classify_id = exam_sj_data.sj_classify_id
+		<where>
+			<include refid="where_query_sj" />
+			AND del = 0
+		</where>
+		ORDER BY exam_sj_data.ins_date DESC
+		limit #{pageBean.startIndex}, #{pageBean.pageSize}
+	</select>
+
+	<select id="findSjDataCountByVo" parameterType="com.xzcoder.kaoshi.vo.SjDataQueryVo" resultType="Integer">
+		SELECT COUNT(*)
+		FROM exam_sj_data
+		<where>
+			<include refid="where_query_sj" />
+			AND del = 0
+		</where>
+	</select>
+
+	<insert id="insertSjData" parameterType="com.xzcoder.kaoshi.po.ExamSjDataCustom">
+		<selectKey keyProperty="sjId" order="AFTER" resultType="Integer">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		INSERT exam_sj_data(
+					title, sj_classify_id,
+					<if test="des !=null and des != ''">
+						des,
+					</if>
+					gdxt, sjxt, xzst, total_score, COUNT, review,
+					ins_user, ins_date, visable)
+				VALUE(
+					#{title}, #{sjClassifyId},
+					<if test="des !=null and des != ''">
+						#{des},
+					</if>
+					#{gdxt}, #{sjxt}, #{xzst}, #{totalScore}, #{count}, #{review},
+					#{insUser}, #{insDate}, #{visable}
+					)
+	</insert>
+
+	<update id="updateSjData" parameterType="com.xzcoder.kaoshi.po.ExamSjDataCustom">
+		UPDATE exam_sj_data
+		SET title = #{title},
+		    sj_classify_id = #{sjClassifyId} ,
+		    des = #{des},
+		    gdxt = #{gdxt},
+		    sjxt = #{sjxt},
+		    xzst = #{xzst},
+		    total_score = #{totalScore},
+		    COUNT = #{count},
+		    upd_user = #{updUser},
+		    upd_date = #{updDate}
+		    <if test="visable != null and visable != -1">
+			, visable = #{visable}
+			</if>
+		<where>
+			sj_id = #{sjId}
+		</where>
+	</update>
+
+	<select id="getSjDataById" parameterType="Integer" resultMap="SjDataCustomResultMap">
+		SELECT exam_sj_data.* ,
+		<include refid="com.xzcoder.kaoshi.admin.mapper.SjClassifyMapper.select_sjc_col" />
+		FROM exam_sj_data
+		INNER JOIN exam_sj_classify ON exam_sj_classify.classify_id = exam_sj_data.sj_classify_id
+		<where>
+			sj_id = #{value}
+		</where>
+	</select>
+
+	<update id="deleteSjDataById">
+		UPDATE exam_sj_data
+			SET del = 1, upd_user = #{updUser}, upd_date = #{updDate}
+		<where>
+			sj_id = #{id}
+		</where>
+	</update>
+
+	<update id="deleteSjDataList">
+		UPDATE exam_sj_data
+			SET del = 1, upd_user = #{updUser}, upd_date = #{updDate}
+		<where>
+			<foreach collection="ids" item="id" open="AND sj_id IN (" close=")" separator=",">
+				#{id}
+			</foreach>
+		</where>
+	</update>
+
+	<select id="getSjVisableById" parameterType="Integer" resultType="Integer">
+		select visable from exam_sj_data where sj_id = #{value}
+	</select>
+
+	<select id="getSjCountBySjIdAndUid" resultType="Integer">
+		SELECT COUNT(1) FROM sys_user
+		INNER JOIN exam_ks_user ON exam_ks_user.user_id = sys_user.id
+		INNER JOIN exam_ks_data ON exam_ks_data.ks_id = exam_ks_user.ks_id
+		WHERE sys_user.id = #{userId} AND exam_ks_data.sj_id = #{sjId}
+	</select>
+
+</mapper>
